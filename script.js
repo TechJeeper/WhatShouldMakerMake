@@ -149,9 +149,16 @@ async function generateNewIdeas() {
     loadingContainer.classList.add('visible');
 
     try {
+        // Debug: Check headers before making the request
+        const headers = {...API_CONFIG.headers};
+        console.log('Request Headers:', {
+            ...headers,
+            Authorization: headers.Authorization.substring(0, 10) + '...' // Only show part of the key
+        });
+
         const response = await fetch(`${API_CONFIG.baseUrl}/chat/completions`, {
             method: 'POST',
-            headers: API_CONFIG.headers,
+            headers: headers,
             body: JSON.stringify({
                 model: API_CONFIG.model,
                 messages: [
@@ -170,6 +177,8 @@ async function generateNewIdeas() {
         if (!response.ok) {
             const errorData = await response.text();
             console.error('API Error:', errorData);
+            console.error('Response Status:', response.status);
+            console.error('Response Headers:', Object.fromEntries([...response.headers]));
             throw new Error(`API request failed with status ${response.status}: ${errorData}`);
         }
 
