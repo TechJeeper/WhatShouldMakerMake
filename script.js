@@ -149,12 +149,14 @@ async function generateNewIdeas() {
     loadingContainer.classList.add('visible');
 
     try {
-        // Debug: Check headers before making the request
-        const headers = {...API_CONFIG.headers};
-        console.log('Request Headers:', {
-            ...headers,
-            Authorization: headers.Authorization.substring(0, 10) + '...' // Only show part of the key
-        });
+        // Prepare headers with proper authorization
+        const headers = {
+            ...API_CONFIG.headers,
+            "Authorization": API_CONFIG.headers.Authorization
+        };
+
+        // Debug: Log partial key for verification
+        console.log('Auth Header (first 20 chars):', headers.Authorization.substring(0, 20) + '...');
 
         const response = await fetch(`${API_CONFIG.baseUrl}/chat/completions`, {
             method: 'POST',
@@ -179,11 +181,15 @@ async function generateNewIdeas() {
             console.error('API Error:', errorData);
             console.error('Response Status:', response.status);
             console.error('Response Headers:', Object.fromEntries([...response.headers]));
+            console.error('Request Headers:', {
+                ...headers,
+                Authorization: headers.Authorization.substring(0, 20) + '...'
+            });
             throw new Error(`API request failed with status ${response.status}: ${errorData}`);
         }
 
         const data = await response.json();
-        console.log('API Response:', data); // Debug log
+        console.log('API Response:', data);
         
         if (!data.choices || !data.choices[0] || !data.choices[0].message || !data.choices[0].message.content) {
             throw new Error('Invalid API response format');
@@ -193,7 +199,7 @@ async function generateNewIdeas() {
         try {
             // Try to extract JSON array from the response
             const content = data.choices[0].message.content.trim();
-            console.log('Content:', content); // Debug log
+            console.log('Content:', content);
             const jsonStr = content.match(/\[.*\]/s)?.[0] || content;
             newProjects = JSON.parse(jsonStr);
             
@@ -204,18 +210,18 @@ async function generateNewIdeas() {
             console.error('Failed to parse API response:', e);
             // Fallback to default projects if parsing fails
             newProjects = [
-                "Design a Pigeon Coop with Smart Features",
-                "Create a CNC Bird Feeder with Weather Protection",
+                "Design a Smart Pigeon Coop",
+                "Create a CNC Bird Feeder",
                 "3D Print Custom Tool Organizers",
-                "Build a Modular Workshop Storage System",
+                "Build a Modular Workshop Storage",
                 "Make a Custom CNC Jig Set",
-                "Design an Automated Pigeon Feeder",
+                "Design an Automated Feeder",
                 "Create a Collapsible Workbench",
                 "Build a Rotating Tool Cabinet",
-                "Design a Smart Dust Collection System",
+                "Design a Smart Dust Collection",
                 "Make a Custom LED Sign",
-                "Create a Multi-Material Project Display",
-                "Build a Mobile Material Storage Rack"
+                "Create a Multi-Material Display",
+                "Build a Mobile Storage Rack"
             ];
         }
         
