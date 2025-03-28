@@ -157,14 +157,52 @@ async function generateNewIdeas() {
                 messages: [
                     {
                         role: "user",
-                        content: "Generate 20 creative project ideas for a maker who specializes in 3D printing, CNC machining, and woodworking. The projects should be practical, functional, and interesting. Include some pigeon-themed projects. Format the response as a JSON array of strings."
+                        content: "Generate 20 creative project ideas for a maker who specializes in 3D printing, CNC machining, and woodworking. The projects should be practical, functional, and interesting. Include some pigeon-themed projects. Format the response as a JSON array of strings. Make sure the response is ONLY the JSON array, no other text."
                     }
-                ]
+                ],
+                temperature: 0.7,
+                max_tokens: 1000
             })
         });
 
+        if (!response.ok) {
+            throw new Error(`API request failed with status ${response.status}`);
+        }
+
         const data = await response.json();
-        const newProjects = JSON.parse(data.choices[0].message.content);
+        
+        if (!data.choices || !data.choices[0] || !data.choices[0].message || !data.choices[0].message.content) {
+            throw new Error('Invalid API response format');
+        }
+
+        let newProjects;
+        try {
+            // Try to extract JSON array from the response
+            const content = data.choices[0].message.content.trim();
+            const jsonStr = content.match(/\[.*\]/s)?.[0] || content;
+            newProjects = JSON.parse(jsonStr);
+            
+            if (!Array.isArray(newProjects)) {
+                throw new Error('Response is not an array');
+            }
+        } catch (e) {
+            console.error('Failed to parse API response:', e);
+            // Fallback to default projects if parsing fails
+            newProjects = [
+                "Design a Pigeon Coop with Smart Features",
+                "Create a CNC Bird Feeder with Weather Protection",
+                "3D Print Custom Tool Organizers",
+                "Build a Modular Workshop Storage System",
+                "Make a Custom CNC Jig Set",
+                "Design an Automated Pigeon Feeder",
+                "Create a Collapsible Workbench",
+                "Build a Rotating Tool Cabinet",
+                "Design a Smart Dust Collection System",
+                "Make a Custom LED Sign",
+                "Create a Multi-Material Project Display",
+                "Build a Mobile Material Storage Rack"
+            ];
+        }
         
         // Update the projects array
         allProjects.length = 0;
@@ -177,7 +215,9 @@ async function generateNewIdeas() {
         document.getElementById('result').classList.remove('visible');
     } catch (error) {
         console.error('Error generating new ideas:', error);
-        alert('Failed to generate new ideas. Please try again later.');
+        alert('Failed to generate new ideas. Using default project list.');
+        // Use the default projects if API call fails
+        randomizeActivities();
     } finally {
         loadingContainer.classList.remove('visible');
     }
