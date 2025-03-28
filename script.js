@@ -161,15 +161,20 @@ async function generateNewIdeas() {
                     }
                 ],
                 temperature: 0.7,
-                max_tokens: 1000
+                max_tokens: 1000,
+                top_p: 1,
+                stream: false
             })
         });
 
         if (!response.ok) {
-            throw new Error(`API request failed with status ${response.status}`);
+            const errorData = await response.text();
+            console.error('API Error:', errorData);
+            throw new Error(`API request failed with status ${response.status}: ${errorData}`);
         }
 
         const data = await response.json();
+        console.log('API Response:', data); // Debug log
         
         if (!data.choices || !data.choices[0] || !data.choices[0].message || !data.choices[0].message.content) {
             throw new Error('Invalid API response format');
@@ -179,6 +184,7 @@ async function generateNewIdeas() {
         try {
             // Try to extract JSON array from the response
             const content = data.choices[0].message.content.trim();
+            console.log('Content:', content); // Debug log
             const jsonStr = content.match(/\[.*\]/s)?.[0] || content;
             newProjects = JSON.parse(jsonStr);
             
