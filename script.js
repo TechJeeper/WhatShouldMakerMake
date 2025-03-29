@@ -155,8 +155,14 @@ function animate() {
         wheelConfig.rotation += wheelConfig.spinSpeed;
         wheelConfig.spinSpeed *= wheelConfig.friction;
 
+        // Add wobble effect when slowing down
+        if (wheelConfig.spinSpeed < 0.05) {
+            wheelConfig.rotation += Math.sin(wheelConfig.rotation * 10) * 0.002;
+        }
+
         if (wheelConfig.spinSpeed < 0.001) {
             wheelConfig.spinning = false;
+            document.querySelector('.wheel-pointer').classList.remove('spinning');
             showResult();
         }
 
@@ -177,19 +183,41 @@ function showResult() {
     resultText.textContent = projects[selectedIndex];
     resultContainer.classList.add('visible');
     
-    // Add celebration effect
+    // Add celebration effects
     createConfetti();
+    createSparkles();
+}
+
+// Create sparkle effect
+function createSparkles() {
+    const colors = ['#ffffff', '#9b4dca', '#b366e6'];
+    for (let i = 0; i < 30; i++) {
+        const sparkle = document.createElement('div');
+        sparkle.className = 'confetti sparkle';
+        sparkle.style.left = `50%`;
+        sparkle.style.top = '50%';
+        sparkle.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+        sparkle.style.transform = `translate(-50%, -50%) scale(${Math.random() * 0.5 + 0.5})`;
+        sparkle.style.animation = `sparkle ${Math.random() * 1 + 0.5}s linear forwards`;
+        document.body.appendChild(sparkle);
+        
+        setTimeout(() => {
+            sparkle.remove();
+        }, 1500);
+    }
 }
 
 // Create confetti effect
 function createConfetti() {
+    const colors = ['#9b4dca', '#b366e6', '#ffffff'];
     for (let i = 0; i < 50; i++) {
         const confetti = document.createElement('div');
         confetti.className = 'confetti';
         confetti.style.left = Math.random() * 100 + 'vw';
+        confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
         confetti.style.animationDuration = (Math.random() * 3 + 2) + 's';
-        confetti.style.opacity = Math.random();
-        confetti.style.transform = `rotate(${Math.random() * 360}deg)`;
+        confetti.style.opacity = Math.random() * 0.5 + 0.5;
+        confetti.style.transform = `rotate(${Math.random() * 360}deg) scale(${Math.random() * 0.5 + 0.5})`;
         document.body.appendChild(confetti);
         
         setTimeout(() => {
@@ -236,6 +264,7 @@ document.getElementById('spinButton').addEventListener('click', () => {
         wheelConfig.spinning = true;
         wheelConfig.spinSpeed = 0.2 + Math.random() * 0.1;
         document.getElementById('result').classList.remove('visible');
+        document.querySelector('.wheel-pointer').classList.add('spinning');
         animate();
     }
 });
