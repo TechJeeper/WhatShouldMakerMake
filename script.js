@@ -1,30 +1,8 @@
-import API_CONFIG from './config.js';
+import { activities } from './activities.js';
 
 // Project options based on Maker's content
-const allProjects = [
-    "3D Printing News",
-    "Design a CNC Project",
-    "Design a Functional Print",
-    "Build a Pigeon Feeder",
-    "Create a Custom Tool Holder",
-    "Make a Woodworking Project",
-    "Design a Custom Enclosure",
-    "Create a Mechanical Puzzle",
-    "Build a Custom Workbench",
-    "Design a Custom Storage Solution",
-    "Make a Custom Sign",
-    "Create a Custom Fixture",
-    "Build a Custom Jig",
-    "Design a Custom Tool",
-    "Create a Custom Stand",
-    "Make a Custom Holder",
-    "Design a Custom Box",
-    "Create a Custom Organizer",
-    "Build a Custom Rack",
-    "Design a Custom Shelf"
-];
-
-let projects = [...allProjects].slice(0, 12);
+const allProjects = [...activities];
+let projects = allProjects.slice(0, 12);
 
 // Wheel configuration
 const wheelConfig = {
@@ -79,8 +57,28 @@ function drawWheel() {
         ctx.rotate(startAngle + sliceAngle / 2);
         ctx.textAlign = 'right';
         ctx.fillStyle = '#ffffff';
-        ctx.font = 'bold 24px Arial';
-        ctx.fillText(project, radius - 40, 8);
+        ctx.font = 'bold 18px Arial';
+        
+        // Word wrap the text
+        const words = project.split(' ');
+        let line = '';
+        let y = 0;
+        const lineHeight = 20;
+        const maxWidth = radius - 80;
+
+        words.forEach((word, i) => {
+            const testLine = line + word + ' ';
+            const metrics = ctx.measureText(testLine);
+            if (metrics.width > maxWidth && i > 0) {
+                ctx.fillText(line, radius - 40, y);
+                line = word + ' ';
+                y += lineHeight;
+            } else {
+                line = testLine;
+            }
+        });
+        ctx.fillText(line, radius - 40, y);
+        
         ctx.restore();
     });
 
@@ -143,92 +141,15 @@ function createConfetti() {
     }
 }
 
-// Generate new project ideas using OpenAI API
-async function generateNewIdeas() {
+// Generate new project ideas
+function generateNewIdeas() {
     const loadingContainer = document.getElementById('loading');
     loadingContainer.classList.add('visible');
 
     try {
-        // Prepare headers with proper authorization
-        const headers = {
-            ...API_CONFIG.headers,
-            "Authorization": API_CONFIG.headers.Authorization
-        };
-
-        // Debug: Log partial key for verification
-        console.log('Auth Header (first 20 chars):', headers.Authorization.substring(0, 20) + '...');
-
-        const response = await fetch(`${API_CONFIG.baseUrl}/chat/completions`, {
-            method: 'POST',
-            headers: headers,
-            body: JSON.stringify({
-                model: API_CONFIG.model,
-                messages: [
-                    {
-                        role: "user",
-                        content: "Generate 20 creative project ideas for a maker who specializes in 3D printing, CNC machining, and woodworking. The projects should be practical, functional, and interesting. Include some pigeon-themed projects. Format the response as a JSON array of strings. Make sure the response is ONLY the JSON array, no other text."
-                    }
-                ],
-                temperature: 0.7,
-                max_tokens: 1000,
-                top_p: 1,
-                stream: false
-            })
-        });
-
-        if (!response.ok) {
-            const errorData = await response.text();
-            console.error('API Error:', errorData);
-            console.error('Response Status:', response.status);
-            console.error('Response Headers:', Object.fromEntries([...response.headers]));
-            console.error('Request Headers:', {
-                ...headers,
-                Authorization: headers.Authorization.substring(0, 20) + '...'
-            });
-            throw new Error(`API request failed with status ${response.status}: ${errorData}`);
-        }
-
-        const data = await response.json();
-        console.log('API Response:', data);
-        
-        if (!data.choices || !data.choices[0] || !data.choices[0].message || !data.choices[0].message.content) {
-            throw new Error('Invalid API response format');
-        }
-
-        let newProjects;
-        try {
-            // Try to extract JSON array from the response
-            const content = data.choices[0].message.content.trim();
-            console.log('Content:', content);
-            const jsonStr = content.match(/\[.*\]/s)?.[0] || content;
-            newProjects = JSON.parse(jsonStr);
-            
-            if (!Array.isArray(newProjects)) {
-                throw new Error('Response is not an array');
-            }
-        } catch (e) {
-            console.error('Failed to parse API response:', e);
-            // Fallback to default projects if parsing fails
-            newProjects = [
-                "Design a Smart Pigeon Coop",
-                "Create a CNC Bird Feeder",
-                "3D Print Custom Tool Organizers",
-                "Build a Modular Workshop Storage",
-                "Make a Custom CNC Jig Set",
-                "Design an Automated Feeder",
-                "Create a Collapsible Workbench",
-                "Build a Rotating Tool Cabinet",
-                "Design a Smart Dust Collection",
-                "Make a Custom LED Sign",
-                "Create a Multi-Material Display",
-                "Build a Mobile Storage Rack"
-            ];
-        }
-        
-        // Update the projects array
-        allProjects.length = 0;
-        allProjects.push(...newProjects);
-        projects = [...allProjects].slice(0, 12);
+        // Shuffle all projects and take 12
+        const shuffled = [...allProjects].sort(() => 0.5 - Math.random());
+        projects = shuffled.slice(0, 12);
         
         // Reset and redraw the wheel
         wheelConfig.rotation = 0;
@@ -237,7 +158,6 @@ async function generateNewIdeas() {
     } catch (error) {
         console.error('Error generating new ideas:', error);
         alert('Failed to generate new ideas. Using default project list.');
-        // Use the default projects if API call fails
         randomizeActivities();
     } finally {
         loadingContainer.classList.remove('visible');
