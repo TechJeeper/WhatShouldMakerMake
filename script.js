@@ -35,28 +35,70 @@ function drawWheel() {
 
     ctx.clearRect(0, 0, wheelConfig.canvas.width, wheelConfig.canvas.height);
 
-    // Draw slices
+    // Add outer glow effect
+    const gradient = ctx.createRadialGradient(
+        centerX, centerY, radius - 10,
+        centerX, centerY, radius + 10
+    );
+    gradient.addColorStop(0, 'rgba(155, 77, 202, 0.3)');
+    gradient.addColorStop(1, 'rgba(155, 77, 202, 0)');
+    ctx.fillStyle = gradient;
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, radius + 10, 0, 2 * Math.PI);
+    ctx.fill();
+
+    // Draw slices with enhanced effects
     projects.forEach((project, index) => {
         const startAngle = index * sliceAngle + wheelConfig.rotation;
         const endAngle = startAngle + sliceAngle;
 
-        // Draw slice
+        // Draw slice with gradient
         ctx.beginPath();
         ctx.moveTo(centerX, centerY);
         ctx.arc(centerX, centerY, radius, startAngle, endAngle);
         ctx.closePath();
-        ctx.fillStyle = index % 2 === 0 ? '#9b4dca' : '#b366e6';
+
+        // Create gradient for slice
+        const sliceGradient = ctx.createRadialGradient(
+            centerX, centerY, 0,
+            centerX, centerY, radius
+        );
+        const baseColor = index % 2 === 0 ? '#9b4dca' : '#b366e6';
+        sliceGradient.addColorStop(0, '#ffffff');
+        sliceGradient.addColorStop(0.2, baseColor);
+        sliceGradient.addColorStop(1, baseColor);
+        
+        ctx.fillStyle = sliceGradient;
         ctx.fill();
+
+        // Add shine effect
+        ctx.beginPath();
+        ctx.moveTo(centerX, centerY);
+        ctx.arc(centerX, centerY, radius, startAngle, endAngle);
+        ctx.closePath();
+        const shine = ctx.createLinearGradient(
+            centerX - radius, centerY - radius,
+            centerX + radius, centerY + radius
+        );
+        shine.addColorStop(0, 'rgba(255, 255, 255, 0.1)');
+        shine.addColorStop(0.5, 'rgba(255, 255, 255, 0)');
+        shine.addColorStop(1, 'rgba(255, 255, 255, 0.1)');
+        ctx.fillStyle = shine;
+        ctx.fill();
+
+        // Add slice border with glow
         ctx.strokeStyle = '#ffffff';
         ctx.lineWidth = 3;
         ctx.stroke();
-
-        // Add text
+        
+        // Add text with enhanced styling
         ctx.save();
         ctx.translate(centerX, centerY);
         ctx.rotate(startAngle + sliceAngle / 2);
         ctx.textAlign = 'right';
         ctx.fillStyle = '#ffffff';
+        ctx.shadowColor = '#ffffff';
+        ctx.shadowBlur = 10;
         ctx.font = 'bold 18px Arial';
         
         // Word wrap the text
@@ -82,14 +124,29 @@ function drawWheel() {
         ctx.restore();
     });
 
-    // Draw center circle
+    // Draw center circle with enhanced effects
     ctx.beginPath();
     ctx.arc(centerX, centerY, 60, 0, 2 * Math.PI);
-    ctx.fillStyle = '#0a0a0a';
+    
+    // Create gradient for center circle
+    const centerGradient = ctx.createRadialGradient(
+        centerX, centerY, 0,
+        centerX, centerY, 60
+    );
+    centerGradient.addColorStop(0, '#1a1a1a');
+    centerGradient.addColorStop(1, '#0a0a0a');
+    ctx.fillStyle = centerGradient;
     ctx.fill();
+
+    // Add glow effect to center circle
+    ctx.shadowColor = '#b366e6';
+    ctx.shadowBlur = 20;
     ctx.strokeStyle = '#b366e6';
     ctx.lineWidth = 4;
     ctx.stroke();
+    
+    // Reset shadow
+    ctx.shadowBlur = 0;
 }
 
 // Animate the wheel
