@@ -180,6 +180,17 @@ function showResult() {
     const resultContainer = document.getElementById('result');
     const resultText = document.getElementById('resultText');
     
+    // Create close button if it doesn't exist
+    if (!resultContainer.querySelector('.close-result')) {
+        const closeButton = document.createElement('button');
+        closeButton.className = 'close-result';
+        closeButton.innerHTML = '×';
+        closeButton.addEventListener('click', () => {
+            resultContainer.classList.remove('visible');
+        });
+        resultContainer.appendChild(closeButton);
+    }
+    
     resultText.textContent = projects[selectedIndex];
     resultContainer.classList.add('visible');
     
@@ -269,8 +280,20 @@ document.getElementById('spinButton').addEventListener('click', () => {
     }
 });
 
-document.getElementById('randomizeButton').addEventListener('click', randomizeActivities);
-document.getElementById('generateButton').addEventListener('click', generateNewIdeas);
+// Also hide result when randomizing or generating new ideas
+function hideResult() {
+    document.getElementById('result').classList.remove('visible');
+}
+
+document.getElementById('randomizeButton').addEventListener('click', () => {
+    hideResult();
+    randomizeActivities();
+});
+
+document.getElementById('generateButton').addEventListener('click', () => {
+    hideResult();
+    generateNewIdeas();
+});
 
 // Initialize the wheel when the page loads
 window.addEventListener('load', initWheel); 
