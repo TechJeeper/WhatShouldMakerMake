@@ -8,6 +8,7 @@
 </head>
 <body>
     <div class="container">
+        <div class="gear-icon" id="settingsIcon">⚙️</div>
         <h1>What Should Maker Make?</h1>
         <div class="wheel-container">
             <canvas id="wheelCanvas"></canvas>
@@ -31,7 +32,24 @@
             </div>
             <p id="resultText"></p>
         </div>
+        
+        <!-- Settings Modal -->
+        <div id="settingsModal" class="modal">
+            <div class="modal-content">
+                <span class="close-modal">&times;</span>
+                <h2>Settings</h2>
+                <div id="passwordSection">
+                    <label for="passwordInput">Enter Password:</label>
+                    <input type="password" id="passwordInput">
+                    <button id="submitPassword" class="glow-button">Submit</button>
+                </div>
+                <div id="settingsContent" style="display: none;">
+                    <!-- This will be populated dynamically -->
+                </div>
+            </div>
+        </div>
     </div>
-    <script type="module" src="script.js"></script>
+    <script src="activities-no-module.js"></script>
+    <script src="script-no-module.js"></script>
 </body>
 </html> 
